@@ -31,8 +31,14 @@ def sensorId = 'B000000083E09526'
     }
 
     element = document.'**'.find{ it.@name == 'Humidity_0' };
-    humidity = element.@value.toString()
+    humidity = element.@value.toFloat().round(1)
+    //tmpValue = tmpValue.round(1)
     println("Humidity: ${humidity}");
+
+    element = document.'**'.find{ it.@name == 'Temperature_0' };
+    temp_c = element.@value.toFloat().round(1)
+    temp_f = ((9.0/5.0)*temp_c + 32).round(1);
+    println("Temp: ${temp_f}");
 	
     //float tmpValue = Float.parseFloat(value)
     //tmpValue = tmpValue.round(1)
