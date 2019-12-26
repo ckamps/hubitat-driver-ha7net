@@ -6,7 +6,7 @@ import groovy.util.XmlSlurper
 metadata {
     definition (name: "HA7Net 1-Wire Humidity Sensor", namespace: "ckamps", author: "Christopher Kampmeier", importUrl: "https://raw.githubusercontent.com/ckamps/hubitat-drivers-ha7net/master/ha7net-humidity.groovy") {
         capability "RelativeHumidityMeasurement"
-		capability "Refresh"
+        capability "Refresh"
     }
 
     preferences {
@@ -46,7 +46,7 @@ def refresh() {
     try { 
         document = parser.parseText(resultText)
     } catch(Exception e) {
-	    log.debug "error occured calling httpget ${e}"
+        log.debug "error occured calling httpget ${e}"
         log.debug(e.toString());
         log.debug(e.getMessage());
         log.debug(e.getStackTrace()); 
