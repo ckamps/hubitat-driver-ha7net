@@ -7,7 +7,7 @@ import groovy.util.XmlSlurper
 metadata {
     definition (name: "HA7Net 1-Wire Humidity and Temperature Sensor", namespace: "ckamps", author: "Christopher Kampmeier", importUrl: "https://raw.githubusercontent.com/ckamps/hubitat-drivers-ha7net/master/ha7net-humidity-temperature.groovy") {
         capability "RelativeHumidityMeasurement"
-		capability "TemperatureMeasurement"
+        capability "TemperatureMeasurement"
         capability "Refresh"
     }
 
@@ -68,9 +68,9 @@ def refresh() {
     element = document.'**'.find{ it.@name == 'Temperature_0' };
     temp_c = element.@value.toFloat().round(1)
     temp_f = ((9.0/5.0)*temp_c + 32).round(1);
-	log.debug("Temperature - F: ${temp_f}");
-	log.debug("Temperature - C: ${temp_c}");
-	sendEvent(name: "temperature", value: temp_f)
+    log.debug("Temperature - F: ${temp_f}");
+    log.debug("Temperature - C: ${temp_c}");
+    sendEvent(name: "temperature", value: temp_f)
 
     // TO DO: Also send "unit"
   
