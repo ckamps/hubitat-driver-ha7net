@@ -4,9 +4,9 @@ def version() {"v0.1.20191225"}
 import groovy.util.XmlSlurper
 
 metadata {
-    definition (name: "HA7Net 1-Wire Humidity Sensor", namespace: "ckamps", author: "Christopher Kampmeier", importUrl: "https://raw.githubusercontent.com/ckamps/hubitat-driver-ha7net/master/ha7net-humidity.groovy") {
-	    capability "RelativeHumidityMeasurement"
-        capability "Refresh"
+    definition (name: "HA7Net 1-Wire Humidity Sensor", namespace: "ckamps", author: "Christopher Kampmeier", importUrl: "https://raw.githubusercontent.com/ckamps/hubitat-drivers-ha7net/master/ha7net-humidity.groovy") {
+        capability "RelativeHumidityMeasurement"
+		capability "Refresh"
     }
 
     preferences {
@@ -38,18 +38,18 @@ def refresh() {
     post.getOutputStream().write(message.getBytes("UTF-8"));
     def postRC = post.getResponseCode();
     if(postRC.equals(200)) {
-      resultText = post.getInputStream().getText()
+        resultText = post.getInputStream().getText()
     }
 
     def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
     try { 
-      document = parser.parseText(resultText)
+        document = parser.parseText(resultText)
     } catch(Exception e) {
-	  log.debug "error occured calling httpget ${e}"
-      log.debug(e.toString());
-      log.debug(e.getMessage());
-      log.debug(e.getStackTrace()); 
+	    log.debug "error occured calling httpget ${e}"
+        log.debug(e.toString());
+        log.debug(e.getMessage());
+        log.debug(e.getStackTrace()); 
     }
 
     element = document.'**'.find{ it.@name == 'Humidity_0' };
