@@ -1,28 +1,13 @@
 # To Do Items
 
-## Tactical
+## Near Term Enhancements
 
-* Finish adding temperature support to humidity and temperature driver.
-* Add celsius vs temperature support based on `location.temperatureScale`.
-* Add humity and temperature offset preferences.
+* Migrate to parent-child device support where the HA7Net is the parent and each sensor known to the HA7Net parent are automatically created as child devices.
+    * https://community.hubitat.com/t/programmatically-populate-devices-composite-devices-child-devices/6419
 * Enhance exception handling.
 * Align logging with device driver best practices.
-* Finish README.md.
+* Finish first usable draft of README.md.
+
+## Longer Term Enhancements
+
 * Exercise standalone testing - https://community.hubitat.com/t/unit-testing-groovy-apps-and-drivers/3691/14
-
-## Examples of Rules Using Temperature and Humidity
-
-* https://community.hubitat.com/t/question-re-else-event-not-triggering/19455/21
-
-## References
-
-* Look to the following example for inspiration:
-  * https://github.com/muxa/hubitat/blob/master/drivers/konke-zigbee-temp-humidity-sensor.groovy
-
-* Parent-Child Devices
-  * https://community.hubitat.com/t/programmatically-populate-devices-composite-devices-child-devices/6419
-
-* Device Capabilities
-  * https://docs.hubitat.com/index.php?title=Driver_Capability_List
-    * RelativeHumidityMeasurement - https://docs.hubitat.com/index.php?title=Driver_Capability_List#RelativeHumidityMeasurement
-    * TemperatureMeasurement - https://docs.hubitat.com/index.php?title=Driver_Capability_List#TemperatureMeasurement

@@ -1,7 +1,5 @@
 def version() {"v0.1.20191226"}
 
-import groovy.util.XmlSlurper
-
 metadata {
     definition (name: "HA7Net 1-Wire Humidity and Temperature Sensor", namespace: "ckamps", author: "Christopher Kampmeier", importUrl: "https://raw.githubusercontent.com/ckamps/hubitat-drivers-ha7net/master/ha7net-humidity-temperature.groovy") {
         capability "RelativeHumidityMeasurement"
@@ -12,6 +10,8 @@ metadata {
     preferences {
         input name: "ipAddress", type: "text", title: "IP Address", description: "IP Address of your HA7Net device", required: true
         input name: "sensorId",  type: "text", title: "1-Wire Sensor ID", description: "Hexadecimal identifier", required: true
+        input name: "tempOffset", type: "decimal", title: "Temperature Offset", description:"", range:"*..*"
+		input name: "humidityOffset", type: "decimal", title: "Humidity Offset", description:"", range: "*..*"
         input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     }
 }
@@ -49,30 +49,21 @@ def refresh() {
 }
 
 private def processResponse(response) {
-    //def parser = new XmlSlurper()
-
-    //try { 
-    //    document = parser.parseText(response)
-    //} catch(Exception e) {
-    //    log.debug "error occured when parsing response data: ${e}"
-    //    log.debug(e.toString());
-    //    log.debug(e.getMessage());
-    //    log.debug(e.getStackTrace()); 
-    //}
-
     element = response.'**'.find{ it.@name == 'Humidity_0' };
-    humidity = element.@value.toFloat().round(1)
+    humidity = element.@value.toFloat()
     log.debug("Humidity: ${humidity}");
+    humidity = humidityOffset ? (humidity + humidityOffset) : humidity
+	humidity = humidity.round(1)
     sendEvent(name: "humidity", value: humidity)
     // TO DO: Also send "unit"
 
-    // TODO: Add logic to take into account location.temperatureScale
     element = response.'**'.find{ it.@name == 'Temperature_0' };
-    temp_c = element.@value.toFloat().round(1)
-    temp_f = ((9.0/5.0)*temp_c + 32).round(1);
-    log.debug("Temperature - F: ${temp_f}");
-    log.debug("Temperature - C: ${temp_c}");
-    sendEvent(name: "temperature", value: temp_f)
+    temp = element.@value.toFloat()
+    log.debug("Temperature - C: ${temp}");
+    temp = (location.temperatureScale == "F") ? ((temp * 1.8) + 32) : temp
+	temp = tempOffset ? (temp + tempOffset) : temp
+	temp = temp.round(2)
+    sendEvent(name: "temperature", value: temp)
     // TO DO: Also send "unit"
   
     def nowDay = new Date().format("MMM dd", location.timeZone)
