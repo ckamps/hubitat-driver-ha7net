@@ -51,7 +51,7 @@ def refresh() {
 }
 
 private def parseResponse(response) {
-    def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
+    def parser = new XmlSlurper()
 
     try { 
         document = parser.parseText(response)
