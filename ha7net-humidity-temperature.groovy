@@ -1,7 +1,5 @@
 def version() {"v0.1.20191226"}
 
-// QUESTION: Is grabbing external modules supported in Hubitat device drivers?
-@Grab(group='org.ccil.cowan.tagsoup', module='tagsoup', version='1.2')
 import groovy.util.XmlSlurper
 
 metadata {
@@ -30,28 +28,35 @@ def initialize() {
     state.version = version()
 }
 
-// QUESTION: Given that the HA7Net needs to be polled in order to obtain sensor data, which
-// functions/events need to be supported in this device driver? Is the refresh() function
-// sufficient?
+def poll() {
+    refresh()   
+}
+
 def refresh() {
-    def post = new URL('http://${ipAddress}/1Wire/ReadHumidity.html').openConnection();
 
-    def message = 'Address_Array=${sensorId}'
-    post.setRequestMethod("POST")
-    post.setDoOutput(true)
-    post.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-    post.getOutputStream().write(message.getBytes("UTF-8"));
-    def postRC = post.getResponseCode();
-    if(postRC.equals(200)) {
-        resultText = post.getInputStream().getText()
+    try {
+        httpPost( [uri: "http://${ipAddress}", 
+                   path: '/1Wire/ReadHumidity.html', 
+                   body: "[Address_Array: ${sensorId}]",
+                   requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
+            if (resp.success) {
+                parseResponse(resp.data)
+            }
+            if (logEnable)
+                if (resp.data) log.debug "${resp.data}"
+        } 
+    } catch (Exception e) {
+        log.warn "Call to refresh() failed: ${e.message}"
     }
+}
 
+private def parseResponse(response) {
     def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
     try { 
-        document = parser.parseText(resultText)
+        document = parser.parseText(response)
     } catch(Exception e) {
-        log.debug "error occured calling httpget ${e}"
+        log.debug "error occured when parsing response data: ${e}"
         log.debug(e.toString());
         log.debug(e.getMessage());
         log.debug(e.getStackTrace()); 
@@ -61,7 +66,6 @@ def refresh() {
     humidity = element.@value.toFloat().round(1)
     log.debug("Humidity: ${humidity}");
     sendEvent(name: "humidity", value: humidity)
-
     // TO DO: Also send "unit"
 
     // TODO: Add logic to take into account location.temperatureScale
@@ -71,7 +75,6 @@ def refresh() {
     log.debug("Temperature - F: ${temp_f}");
     log.debug("Temperature - C: ${temp_c}");
     sendEvent(name: "temperature", value: temp_f)
-
     // TO DO: Also send "unit"
   
     def nowDay = new Date().format("MMM dd", location.timeZone)

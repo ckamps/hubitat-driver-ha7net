@@ -10,6 +10,10 @@
 * Finish README.md.
 * Exercise standalone testing - https://community.hubitat.com/t/unit-testing-groovy-apps-and-drivers/3691/14
 
+## Examples of Rules Using Temperature and Humidity
+
+* https://community.hubitat.com/t/question-re-else-event-not-triggering/19455/21
+
 ## References
 
 * Look to the following example for inspiration:
