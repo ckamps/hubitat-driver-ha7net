@@ -11,7 +11,7 @@ metadata {
     }
 
     preferences {
-        input name: 'ipAddress',      type: 'text',    title: 'HA7Net Address',            description: 'Either FQDN or IP Address of an HA7Net device', required: true
+        input name: 'address',        type: 'text',    title: 'HA7Net Address',            description: 'FQDN or IP address', required: true
         input name: 'sensorId',       type: 'text',    title: '1-Wire Sensor ID',          description: '', required: true
         input name: 'humiditySensor', type: 'bool',    title: 'Includes humidity sensor?', description: ''
         input name: 'tempOffset',     type: 'decimal', title: 'Temperature Offset',        description: '-n, +n or n to adjust sensor reading', range:'*..*'
@@ -37,7 +37,7 @@ def poll() {
 }
 
 def refresh() {
-    def uri = "http://${ipAddress}";
+    def uri = "http://${address}";
     def body = [Address_Array: "${sensorId}"];
     def path = humiditySensor ? '/1Wire/ReadHumidity.html' : '/1Wire/ReadTemperature.html'
     try {
