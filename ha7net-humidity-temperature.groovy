@@ -33,12 +33,10 @@ def poll() {
 }
 
 def refresh() {
-
+    def uri = "http://${ipAddress}";
+    def body = [Address_Array: "${sensorId}"];
     try {
-        httpPost( [uri: "http://${ipAddress}", 
-                   path: '/1Wire/ReadHumidity.html', 
-                   body: "[Address_Array: ${sensorId}]",
-                   requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
+        httpPost( [uri: uri, path: '/1Wire/ReadHumidity.html', body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
             if (resp.success) {
                 processResponse(resp.data)
             }
