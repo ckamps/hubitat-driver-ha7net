@@ -11,7 +11,7 @@ metadata {
         input name: "ipAddress", type: "text", title: "IP Address", description: "IP Address of your HA7Net device", required: true
         input name: "sensorId",  type: "text", title: "1-Wire Sensor ID", description: "Hexadecimal identifier", required: true
         input name: "tempOffset", type: "decimal", title: "Temperature Offset", description:"", range:"*..*"
-		input name: "humidityOffset", type: "decimal", title: "Humidity Offset", description:"", range: "*..*"
+        input name: "humidityOffset", type: "decimal", title: "Humidity Offset", description:"", range: "*..*"
         input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     }
 }
@@ -53,7 +53,7 @@ private def processResponse(response) {
     humidity = element.@value.toFloat()
     log.debug("Humidity: ${humidity}");
     humidity = humidityOffset ? (humidity + humidityOffset) : humidity
-	humidity = humidity.round(1)
+    humidity = humidity.round(1)
     sendEvent(name: "humidity", value: humidity)
     // TO DO: Also send "unit"
 
@@ -61,8 +61,8 @@ private def processResponse(response) {
     temp = element.@value.toFloat()
     log.debug("Temperature - C: ${temp}");
     temp = (location.temperatureScale == "F") ? ((temp * 1.8) + 32) : temp
-	temp = tempOffset ? (temp + tempOffset) : temp
-	temp = temp.round(2)
+    temp = tempOffset ? (temp + tempOffset) : temp
+    temp = temp.round(2)
     sendEvent(name: "temperature", value: temp)
     // TO DO: Also send "unit"
   
