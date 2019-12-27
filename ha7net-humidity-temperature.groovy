@@ -40,7 +40,7 @@ def refresh() {
                    body: "[Address_Array: ${sensorId}]",
                    requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
             if (resp.success) {
-                parseResponse(resp.data)
+                processResponse(resp.data)
             }
             if (logEnable)
                 if (resp.data) log.debug "${resp.data}"
@@ -50,26 +50,26 @@ def refresh() {
     }
 }
 
-private def parseResponse(response) {
-    def parser = new XmlSlurper()
+private def processResponse(response) {
+    //def parser = new XmlSlurper()
 
-    try { 
-        document = parser.parseText(response)
-    } catch(Exception e) {
-        log.debug "error occured when parsing response data: ${e}"
-        log.debug(e.toString());
-        log.debug(e.getMessage());
-        log.debug(e.getStackTrace()); 
-    }
+    //try { 
+    //    document = parser.parseText(response)
+    //} catch(Exception e) {
+    //    log.debug "error occured when parsing response data: ${e}"
+    //    log.debug(e.toString());
+    //    log.debug(e.getMessage());
+    //    log.debug(e.getStackTrace()); 
+    //}
 
-    element = document.'**'.find{ it.@name == 'Humidity_0' };
+    element = response.'**'.find{ it.@name == 'Humidity_0' };
     humidity = element.@value.toFloat().round(1)
     log.debug("Humidity: ${humidity}");
     sendEvent(name: "humidity", value: humidity)
     // TO DO: Also send "unit"
 
     // TODO: Add logic to take into account location.temperatureScale
-    element = document.'**'.find{ it.@name == 'Temperature_0' };
+    element = response.'**'.find{ it.@name == 'Temperature_0' };
     temp_c = element.@value.toFloat().round(1)
     temp_f = ((9.0/5.0)*temp_c + 32).round(1);
     log.debug("Temperature - F: ${temp_f}");
