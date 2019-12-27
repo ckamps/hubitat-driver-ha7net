@@ -62,12 +62,12 @@ private def processResponse(response) {
         humidity = humidityOffset ? (humidity + humidityOffset) : humidity
         humidity = humidity.round(1)
 
-	    sendEvent([
-		    name: 'humidity',
-		    value: humidity,
-		    unit: "%",
-		    descriptionText: "Humidity is ${humidity}%",
-	    ])
+        sendEvent(
+            name: 'humidity',
+            value: humidity,
+            unit: "%",
+            descriptionText: "Humidity is ${humidity}%",
+        )
     }
 
     element = response.'**'.find{ it.@name == 'Temperature_0' };
@@ -77,15 +77,19 @@ private def processResponse(response) {
     temp = tempOffset ? (temp + tempOffset) : temp
     temp = temp.round(2)
 
-    sendEvent([
-		name: 'temperature',
-		value: temp,
-		unit: "°${location.temperatureScale}",
-		descriptionText: "Temperature is ${temp}°${location.temperatureScale}",
-		translatable:true
-	])
+    sendEvent(
+        name: 'temperature',
+        value: temp,
+        unit: "°${location.temperatureScale}",
+        descriptionText: "Temperature is ${temp}°${location.temperatureScale}",
+        translatable: true
+    )
   
-    def nowDay = new Date().format("MMM dd", location.timeZone)
-    def nowTime = new Date().format("h:mm a", location.timeZone)
-    sendEvent(name: "lastUpdated", value: nowDay + " at " + nowTime, displayed: false)
+    def nowDay = new Date().format('MMM dd', location.timeZone)
+    def nowTime = new Date().format('h:mm a', location.timeZone)
+    sendEvent(
+        name: 'lastUpdated',
+        value: nowDay + " at " + nowTime,
+        displayed: false
+    )
 }
