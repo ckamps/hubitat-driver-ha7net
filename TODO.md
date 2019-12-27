@@ -15,6 +15,9 @@
 * Look to the following example for inspiration:
   * https://github.com/muxa/hubitat/blob/master/drivers/konke-zigbee-temp-humidity-sensor.groovy
 
+* Parent-Child Devices
+  * https://community.hubitat.com/t/programmatically-populate-devices-composite-devices-child-devices/6419
+
 * Device Capabilities
   * https://docs.hubitat.com/index.php?title=Driver_Capability_List
     * RelativeHumidityMeasurement - https://docs.hubitat.com/index.php?title=Driver_Capability_List#RelativeHumidityMeasurement
