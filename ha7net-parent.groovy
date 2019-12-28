@@ -28,7 +28,7 @@ def initialize() {
 
 def refresh() {
     def uri = "http://${address}";
-    def body = [LockID: '0', FamilyCode: '', ConditionalSearch: 'false'];
+    def body = [LockID: '0'];
     try {
         httpPost( [uri: uri, path: '/1Wire/Search.html', body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
             if (resp.success) {
@@ -43,7 +43,7 @@ def refresh() {
 }
 
 private def processSensors(response) {
-    response.'**'.findAll{ it.@name.startsWith('Address_') }.each { element ->
+    response.'**'.findAll{ it.@class == 'HA7Value' && it.@name.text().startsWith('Address_') }.each { element ->
         log.debug element.@value
     }
 }

@@ -54,6 +54,7 @@ def refresh() {
 }
 
 private def processResponse(response) {
+    log.debug("Sensor ID: ${sensorId}");
 
     if (humiditySensor) {
         element = response.'**'.find{ it.@name == 'Humidity_0' };
