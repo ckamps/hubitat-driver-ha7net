@@ -1,6 +1,6 @@
 # Hubitat Drivers for HA7Net and 1-Wire Devices
 
-The 'ha7net-temp-humidity.groovy` driver is in a working state.
+The `ha7net-temp-humidity.groovy` driver is in a working state.
 
 ### Usage
 
