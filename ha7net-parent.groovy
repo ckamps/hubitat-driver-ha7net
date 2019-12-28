@@ -28,8 +28,9 @@ def initialize() {
 
 def refresh() {
     def uri = "http://${address}";
+    def body = [LockID: '0', FamilyCode: '', ConditionalSearch: 'false'];
     try {
-        httpPost( [uri: uri, path: '/1Wire/Search.html', body: '', requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
+        httpPost( [uri: uri, path: '/1Wire/Search.html', body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
             if (resp.success) {
                 processSensors(resp.data)
             }
