@@ -2,10 +2,8 @@
 
 ## Near Term Enhancements
 
-* Perform failure testing, enhance exception handling, review debug logs, enhance logging where necessary.
-* Migrate to parent-child device support where the HA7Net is the parent and each sensor known to the HA7Net parent are automatically created as child devices.
-    * https://community.hubitat.com/t/programmatically-populate-devices-composite-devices-child-devices/6419
-* Finish first usable draft of README.md.
+* When recreating child devices, support an option to retain existing Device Name and Device Label values.
+* Do more testing of AAG TAI-8540 combined humidity and temperature sensors so that we better understand whether or not these devices always use the same 1-Wire ID for both humidity and temperature readings. 
 
 ## Longer Term Enhancements
 

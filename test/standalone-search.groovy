@@ -18,9 +18,9 @@ import groovy.xml.*
 def ipAddress = '192.168.2.242'
 def sensorId = 'C1000000A68BCF26'
 
-def post = new URL("http://${ipAddress}/1Wire/ReadHumidity.html").openConnection();
+def post = new URL("http://${ipAddress}/1Wire/Search.html").openConnection();
 
-def message = "Address_Array=${sensorId}"
+def message = 'LockID=0';
 post.setRequestMethod("POST")
 post.setDoOutput(true)
 post.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
@@ -36,12 +36,27 @@ def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
 document = parser.parseText(resultText)
 
-println(XmlUtil.serialize(document));
-element = document.'**'.find{ it.@name == 'Humidity_0' };
-humidity = element.@value.toFloat().round(1)
-println("Humidity: ${humidity}");
+serializedDocument = XmlUtil.serialize(document)
 
-element = document.'**'.find{ it.@name == 'Temperature_0' };
-temp_c = element.@value.toFloat().round(1)
-temp_f = ((9.0/5.0)*temp_c + 32).round(1);
-println("Temp: ${temp_f}");
+println serializedDocument.replace("\n", "").replace("\r", "")
+
+sensorElements = document.'**'.findAll{ it.@name.text().startsWith('Address_') };
+
+println sensorElements.size()
+
+sensorElements.each {
+    println it.@value.text();
+}
+
+//document.'**'.findAll{ it.@class == 'HA7Value' && it.@name.text().startsWith('Address_') }.each {
+//    println it.@value.text();
+//}
+
+//element = document.'**'.find{ it.@name == 'Humidity_0' };
+//humidity = element.@value.toFloat().round(1)
+//println("Humidity: ${humidity}");
+
+//element = document.'**'.find{ it.@name == 'Temperature_0' };
+//temp_c = element.@value.toFloat().round(1)
+//temp_f = ((9.0/5.0)*temp_c + 32).round(1);
+//println("Temp: ${temp_f}");
