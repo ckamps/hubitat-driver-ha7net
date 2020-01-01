@@ -70,34 +70,32 @@ def createChildren() {
 }
 
 def refreshChildren(){
-	log.info "Refreshing children"
-	def children = getChildDevices()
+    log.info "Refreshing children"
+    def children = getChildDevices()
     children.each {child->
   		child.refresh()
     }
 }
 
 def recreateChildren(){
-    og.info "Recreating children"
-
+    log.info "Recreating children"
     // To Do: Based on a new preference, capture the name and label of each child device and reapply those names and labels
     // for all discovered sensors that were previously known.
-
     deleteChildren()
     createChildren()
 }
 
 def deleteChildren() {
-	log.info "Deleting children"
-	def children = getChildDevices()
+    log.info "Deleting children"
+    def children = getChildDevices()
     children.each {child->
   		deleteChildDevice(child.deviceNetworkId)
     }
 }
 
 def deleteUnmatchedChildren() {
+   // To Do: Not yet implemnted.
    discoveredSensors = getSensors()
-
    getChildDevices().each { device ->
        log.debug("Found an existing child device")
    }
@@ -210,6 +208,5 @@ private def doHttpPost(uri, path, body) {
     } catch (Exception e) {
         log.warn "httpPost() of ${path} to HA7Net failed: ${e.message}"
     }
-
     return(response)
 }
