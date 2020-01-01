@@ -19,32 +19,43 @@ Beta quality. Basic testing of these drivers has been done. See [TODO](TODO.md) 
 
 Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have been tested with and currently support only these sensors:
 
-* DS18B20 and DS18S20 : Temperature
-* AAG TAI-8540:  Humidity + temperature
+|Sensor|Type|
+|------|----|
+|DS18B20|Temperature|
+|DS18S20|Temperature|
+|DS2438|Temperature|
+|AAG TAI-8540|Humidity + temperature|
 
 ## Usage
 
-1. Deploy the following drivers to Hubitat:
-    * `ha7net-child-temperature.groovy` - Supports DS18B20 1-Wire temperature sensors.
-    * `ha7net-child-humidity.groovy` - Supports humidity readings from the combined AAG TAI-8540 humidity + temperature sensor.
-    * `ha7net-child-temperature-h.groovy` - Supports temperature readings from the combined AAG TAI-8540 humidity + temperature sensor.
-    * `ha7net-parent.groovy` - Auto discovers 1-Wire sensors via HA7Net and creates child devices.
-1. Create a virtual device to represent each of your HA7Net appliances.
-    1. Select the driver "HA7Net 1-Wire - Parent".
-    1. Set the HA7Net IP address.
-    1. Press the "Refresh" button on the virtual device to discover the current set of 1-Wire sensors known to the HA7Net and to create child devices for each sensor.
-    1. Optionally, in each child device change the Device Name and/or Device Label to represent the function and/or location of the associated sensor.
+### Deploy Drivers to Hubitat
+
+|Driver File|Description|
+|-----------|-----------|
+|`ha7net-child-temperature.groovy`|Supports DS18B20 1-Wire temperature sensors.|
+|`ha7net-child-humidity.groovy`|Supports humidity readings from the combined AAG TAI-8540 humidity + temperature sensor.|
+|`ha7net-child-temperature-h.groovy`|Supports temperature readings from the combined AAG TAI-8540 humidity + temperature sensor.|
+|`ha7net-parent.groovy`|Auto discovers 1-Wire sensors via HA7Net and creates child devices.|
+
+### Create Virtual Device for the HA7Net
+
+1. Select the driver "HA7Net 1-Wire - Parent".
+1. Set the HA7Net IP address.
+1. Press the "Refresh" button on the virtual device to discover the current set of 1-Wire sensors known to the HA7Net and to create child devices for each sensor.
+1. Optionally, in each child device change the Device Name and/or Device Label to represent the function and/or location of the associated sensor.
 
 ### Parent Driver Commands
 
 Within a virtual device associated with the parent driver, you can execute the following commands:
 
-* `createChildren` - Discover all sensors known to the HA7Net and create child devices as appropriate.  Loads current sensor reading into each child device.
-* `deleteChildren` - Delete all children.
-* `deleteUnmatchedChildren` - Not yet implemented, but its intent will be to delete child devices that are not known to the HA7Net.
-* `recreateChildren` - Deletes all children and create new children based on newly discovered sensors.
-* `refresh` - See `refreshChildren`.
-* `refreshChildren` - Updates the sensor reading for each child device by calling the `refresh()` method of each child.
+|Command|Description|
+|-------|-----------|
+|`createChildren`|Discover all sensors known to the HA7Net and create child devices as appropriate.  Loads current sensor reading into each child device.|
+|`deleteChildren`|Delete all children.|
+|`deleteUnmatchedChildren`|Not yet implemented, but its intent will be to delete child devices that are not known to the HA7Net.|
+|`recreateChildren`|Deletes all children and create new children based on newly discovered sensors.|
+|`refresh`|See `refreshChildren`.|
+|`refreshChildren`|Updates the sensor reading for each child device by calling the `refresh()` method of each child.|
 
 ## Auto Refreshing Child Device Readings
 
