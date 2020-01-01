@@ -9,7 +9,7 @@ Although firmware updates for the HA7Net are no longer available, the device sup
 
 It should not be difficult to extend these drivers to support similar 1-Wire gateway appliances such as the [OW-Server](https://www.embeddeddatasystems.com/OW-SERVER-1-Wire-to-Ethernet-Server-Revision-2_p_152.html). This device supports just 22 sensors, but appears to offer a richer API than the screen scrapping required to integrate with the HA7Net.
 
-Similarly, use of `[owserver](https://manpages.debian.org/testing/owserver/owserver.1.en.html)` should also be failrly straightforward for those people who have deployed `owserver` on their own computers.
+Similarly, use of [owserver](https://manpages.debian.org/testing/owserver/owserver.1.en.html) should also be failrly straightforward for those people who have deployed `owserver` on their own computers.
 
 ## Current State
 
