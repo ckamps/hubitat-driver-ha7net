@@ -35,6 +35,17 @@ Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have
     1. Press the "Refresh" button on the virtual device to discover the current set of 1-Wire sensors known to the HA7Net and to create child devices for each sensor.
     1. Optionally, in each child device change the Device Name and/or Device Label to represent the function and/or location of the associated sensor.
 
+### Parent Driver Commands
+
+Within a virtual device associated with the parent driver, you can execute the following commands:
+
+* `createChildren` - Discover all sensors known to the HA7Net and create child devices as appropriate.  Loads current sensor reading into each child device.
+* `deleteChildren` - Delete all children.
+* `deleteUnmatchedChildren` - Not yet implemented, but its intent will be to delete child devices that are not known to the HA7Net.
+* `recreateChildren` - Deletes all children and create new children based on newly discovered sensors.
+* `refresh` - See `refreshChildren`.
+* `refreshChildren` - Updates the sensor reading for each child device by calling the `refresh()` method of each child.
+
 ## Auto Refreshing Child Device Readings
 
 Since the HA7Net is not actively sending sensor data to Hubitat, you'll typically want to set up a rule in Rules Manager (RM) to periodically issue a refresh of the sensors.  In a timer-based rule, you can specify the command `refreshChildDevices` to force a refresh of all child devices.

@@ -10,13 +10,15 @@ metadata {
         
         capability 'Refresh'
 
-        command "recreateChildDevices"
-        command "refreshChildDevices"
+        command 'createChildren'
+        command 'deleteChildren'
+        command 'deleteUnmatchedChildren'
+        command 'recreateChildren'
+        command 'refreshChildren'
     }
 
     preferences {
         input name: 'address',         type: 'text',    title: 'HA7Net Address',                 description: 'FQDN or IP address', required: true
-        input name: 'deleteUnmatched', type: 'bool',    title: 'Delete unmatched child devices', defaultValue: false
         input name: 'logEnable',       type: 'bool',    title: 'Enable debug logging',           defaultValue: false
     }
 }
@@ -34,6 +36,10 @@ def initialize() {
 }
 
 def refresh() {
+    refreshChildren()
+}
+
+def createChildren() {
     def sensors = []
 
     sensors = getSensors()
@@ -61,13 +67,9 @@ def refresh() {
             }
         }
     }
-
-    if (deleteUnmatched) {
-        deleteUnmatchedChildDevices(sensors)
-    }
 }
 
-def refreshChildDevices(){
+def refreshChildren(){
 	log.info "Refreshing children"
 	def children = getChildDevices()
     children.each {child->
@@ -75,9 +77,14 @@ def refreshChildDevices(){
     }
 }
 
-def recreateChildDevices(){
+def recreateChildren(){
+    og.info "Recreating children"
+
+    // To Do: Based on a new preference, capture the name and label of each child device and reapply those names and labels
+    // for all discovered sensors that were previously known.
+
     deleteChildren()
-    refresh()
+    createChildren()
 }
 
 def deleteChildren() {
@@ -86,6 +93,14 @@ def deleteChildren() {
     children.each {child->
   		deleteChildDevice(child.deviceNetworkId)
     }
+}
+
+def deleteUnmatchedChildren() {
+   discoveredSensors = getSensors()
+
+   getChildDevices().each { device ->
+       log.debug("Found an existing child device")
+   }
 }
 
 // Called by humidity child devices during their refresh() methods
@@ -197,10 +212,4 @@ private def doHttpPost(uri, path, body) {
     }
 
     return(response)
-}
-
-private def deleteUnmatchedChildDevices(discoveredSensors) {
-   getChildDevices().each { device ->
-       log.debug("Found an existing child device")
-   }
 }
