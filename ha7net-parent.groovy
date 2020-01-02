@@ -73,7 +73,7 @@ def refreshChildren(){
     if (logEnable) log.info "Refreshing children"
     def children = getChildDevices()
     children.each {child->
-  		child.refresh()
+        child.refresh()
     }
 }
 
@@ -89,7 +89,7 @@ def deleteChildren() {
     if (logEnable) log.info "Deleting children"
     def children = getChildDevices()
     children.each {child->
-  		deleteChildDevice(child.deviceNetworkId)
+        deleteChildDevice(child.deviceNetworkId)
     }
 }
 
@@ -176,7 +176,6 @@ private def getSensors() {
     sensorElements.each {
         def sensorId = it.@value.text()
         if (logEnable) log.debug("Sensor discovered - value: ${sensorId}")
-
         discoveredSensors.add(sensorId)
     }
 
