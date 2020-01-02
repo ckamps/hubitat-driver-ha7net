@@ -2,6 +2,8 @@
 
 ## Near Term Enhancements
 
+* Gracefully handle doHttpPost() failures by throwing exception and catching in calling code.
+
 * When recreating child devices, support an option to retain existing Device Name and Device Label values.
 
 * Do more testing of AAG TAI-8540 combined humidity and temperature sensors so that we better understand whether or not these devices always use the same 1-Wire ID for both humidity and temperature readings. 

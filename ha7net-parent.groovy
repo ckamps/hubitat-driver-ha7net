@@ -1,4 +1,4 @@
-def version() {'v0.1.1'}
+def version() {'v0.1.2'}
 
 import groovy.xml.*
 
@@ -50,11 +50,11 @@ def createChildren() {
         if (getChildDevice(sensorId) == null) {
             sensorType = getSensorType(sensorId)
             if (sensorType == 'temperature') {
-                log.debug "Discovered temperature sensor: ${sensorId}"
+                if (logEnable) log.debug "Discovered temperature sensor: ${sensorId}"
                 child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - Temperature", isComponent: false])
                 child.refresh()
             } else if (sensorType == 'humidity') {
-                log.debug "Discovered humidity sensor: ${sensorId}"
+                if (logEnable) log.debug "Discovered humidity sensor: ${sensorId}"
                 
                 child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Humidity", sensorId, [name: sensorId, label: "${sensorId} - Humidity" , isComponent: false])
                 child.refresh()
@@ -63,14 +63,14 @@ def createChildren() {
                 child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature (H)", "${sensorId}.1", [name:  "${sensorId}.1", label:  "${sensorId}.1 - Temperature", isComponent: false])
                 child.refresh()
             } else {
-                log.warn "Discovered unknown sensor type: ${sensorId}"
+                if (logEnable) log.warn "Discovered unknown sensor type: ${sensorId}"
             }
         }
     }
 }
 
 def refreshChildren(){
-    log.info "Refreshing children"
+    if (logEnable) log.info "Refreshing children"
     def children = getChildDevices()
     children.each {child->
   		child.refresh()
@@ -78,7 +78,7 @@ def refreshChildren(){
 }
 
 def recreateChildren(){
-    log.info "Recreating children"
+    if (logEnable) log.info "Recreating children"
     // To Do: Based on a new preference, capture the name and label of each child device and reapply those names and labels
     // for all discovered sensors that were previously known.
     deleteChildren()
@@ -86,7 +86,7 @@ def recreateChildren(){
 }
 
 def deleteChildren() {
-    log.info "Deleting children"
+    if (logEnable) log.info "Deleting children"
     def children = getChildDevices()
     children.each {child->
   		deleteChildDevice(child.deviceNetworkId)
@@ -97,7 +97,7 @@ def deleteUnmatchedChildren() {
    // To Do: Not yet implemnted.
    discoveredSensors = getSensors()
    getChildDevices().each { device ->
-       log.debug("Found an existing child device")
+       if (logEnable) log.debug("Found an existing child device")
    }
 }
 
@@ -110,6 +110,10 @@ float getHumidity(sensorId) {
     response = doHttpPost(uri, path, body)
 
     element = response.'**'.find{ it.@name == 'Humidity_0' }
+    
+    if (!element) {
+        throw new Exception("Can't obtain humidity for sensor ${sensorId}")
+    }
 
     return(element.@value.toFloat())
 }
@@ -124,6 +128,10 @@ float getTemperatureH(sensorId) {
 
     element = response.'**'.find{ it.@name == 'Temperature_0' }
 
+    if (!element) {
+        throw new Exception("Can't obtain temperature for sensor ${sensorId}")
+    }
+
     return(element.@value.toFloat())
 }
 
@@ -136,6 +144,10 @@ float getTemperature(sensorId) {
     response = doHttpPost(uri, path, body)
 
     element = response.'**'.find{ it.@name == 'Temperature_0' }
+    
+    if (!element) {
+        throw new Exception("Can't obtain temperature for sensor ${sensorId}")
+    }
 
     return(element.@value.toFloat())
 }
@@ -184,7 +196,7 @@ private def getSensorType(sensorId) {
                                   it.@name.text().startsWith('Device_Exception_0') &&
                                   it.@value.text().startsWith('Not a')
                                  }
-
+     
     // To Do: When we think we found a temperature only device, we should probably do a standalone temperature
     // lookup to confirm that it is a temperature device before moving on.
 
@@ -200,8 +212,8 @@ private def doHttpPost(uri, path, body) {
             if (resp.success) {
                 response = resp.data
                 if ((logEnable) && (response.data)) {
-                    //serializedDocument = XmlUtil.serialize(response)
-                    //log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
+                    serializedDocument = XmlUtil.serialize(response)
+                    log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
                 }
             }
         }

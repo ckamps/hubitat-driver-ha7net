@@ -1,4 +1,4 @@
-def version() {'v0.1.1'}
+def version() {'v0.1.2'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Temperature',
@@ -35,10 +35,17 @@ def poll() {
 
 def refresh() {
     sensorId = device.deviceNetworkId
-    log.debug("Getting temperature for sensor: ${sensorId}")
-    temp = parent.getTemperature(sensorId)
+    if (logEnable) log.debug("Getting temperature for sensor: ${sensorId}")
 
-    log.debug("Temperature - C: ${temp}")
+    try {
+        temp = parent.getTemperature(sensorId)
+    }
+    catch (Exception e) {
+        log.warn("Can't obtain temperature for sensor ${sensorId}")
+        return
+    }
+    
+    if (logEnable) log.debug("Temperature - C: ${temp}")
     temp = (location.temperatureScale == "F") ? ((temp * 1.8) + 32) : temp
     temp = offset ? (temp + offset) : temp
     temp = temp.round(2)

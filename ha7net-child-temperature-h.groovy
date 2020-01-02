@@ -1,4 +1,4 @@
-def version() {'v0.1.1'}
+def version() {'v0.1.2'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Temperature (H)',
@@ -37,10 +37,17 @@ def refresh() {
     // Since AAG TAI-8540 sensors can have the same 1-Wire ID for both humidity and temp, by convention, we appended
     // a trailing ".1" to the 1-Wire ID when we registered the temperature device.
     sensorId = device.deviceNetworkId.substring(0, device.deviceNetworkId.length() - 2)
-    log.debug("Getting temperature for sensor: ${sensorId}")
-    temp = parent.getTemperatureH(sensorId)
+    if (logEnable) log.debug("Getting temperature for sensor: ${sensorId}")
 
-    log.debug("Temperature - C: ${temp}")
+    try {
+        temp = parent.getTemperatureH(sensorId)
+    }
+    catch (Exception e) {
+        log.warn("Can't obtain temperature for sensor ${sensorId}")
+        return
+    }
+
+    if (logEnable) log.debug("Temperature - C: ${temp}")
     temp = (location.temperatureScale == "F") ? ((temp * 1.8) + 32) : temp
     temp = offset ? (temp + offset) : temp
     temp = temp.round(2)

@@ -1,4 +1,4 @@
-def version() {'v0.1.1'}
+def version() {'v0.1.2'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Humidity',
@@ -35,10 +35,17 @@ def poll() {
 
 def refresh() {
     sensorId = device.deviceNetworkId
-    log.debug("Getting humidity for sensor: ${sensorId}")
-    humidity = parent.getHumidity(sensorId)
+    if (logEnable) log.debug("Getting humidity for sensor: ${sensorId}")
 
-    log.debug("Humidity: ${humidity}")
+    try {
+        humidity = parent.getHumidity(sensorId)
+    }
+    catch (Exception e) {
+        log.warn("Can't obtain humidity for sensor ${sensorId}")
+        return
+    }
+
+    if (logEnable) log.debug("Humidity: ${humidity}")
     humidity = humidityOffset ? (humidity + humidityOffset) : humidity
     humidity = humidity.round(1)
 
