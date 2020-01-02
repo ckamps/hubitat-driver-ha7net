@@ -18,8 +18,8 @@ metadata {
     }
 
     preferences {
-        input name: 'address',         type: 'text',    title: 'HA7Net Address',                 description: 'FQDN or IP address', required: true
-        input name: 'logEnable',       type: 'bool',    title: 'Enable debug logging',           defaultValue: false
+        input name: 'address',   type: 'text', title: 'HA7Net Address',       description: 'FQDN or IP address', required: true
+        input name: 'logEnable', type: 'bool', title: 'Enable debug logging', defaultValue: false
     }
 }
 
