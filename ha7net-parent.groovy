@@ -1,4 +1,4 @@
-def version() {'v0.1.4'}
+def version() {'v0.1.5'}
 
 import groovy.xml.*
 
@@ -101,6 +101,24 @@ def deleteUnmatchedChildren() {
    }
 }
 
+def doHttpPost(uri, path, body) {
+    def response = []
+    try {
+        httpPost( [uri: uri, path: path, body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
+            if (resp.success) {
+                response = resp.data
+                if ((logEnable) && (response.data)) {
+                    serializedDocument = XmlUtil.serialize(response)
+                    log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
+                }
+            }
+        }
+    } catch (Exception e) {
+        log.warn "httpPost() of ${path} to HA7Net failed: ${e.message}"
+    }
+    return(response)
+}
+
 // To Do: Is there a more direct means for child devices to access parent preferences/settings?
 def getHa7netAddress() {
     return(address)   
@@ -156,22 +174,4 @@ private def getSensorType(sensorId) {
     // To Do: Add deteection of unsupported devices and log those cases.
 
     return(element ? 'temperature' : 'humidity')
-}
-
-private def doHttpPost(uri, path, body) {
-    def response = []
-    try {
-        httpPost( [uri: uri, path: path, body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
-            if (resp.success) {
-                response = resp.data
-                if ((logEnable) && (response.data)) {
-                    serializedDocument = XmlUtil.serialize(response)
-                    log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
-                }
-            }
-        }
-    } catch (Exception e) {
-        log.warn "httpPost() of ${path} to HA7Net failed: ${e.message}"
-    }
-    return(response)
 }
