@@ -1,4 +1,4 @@
-def version() {'v0.1.2'}
+def version() {'v0.1.4'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Temperature (H)',
@@ -40,10 +40,10 @@ def refresh() {
     if (logEnable) log.debug("Getting temperature for sensor: ${sensorId}")
 
     try {
-        temp = parent.getTemperatureH(sensorId)
+        temp = getTemperature(sensorId)
     }
     catch (Exception e) {
-        log.warn("Can't obtain temperature for sensor ${sensorId}")
+        log.warn("Can't obtain temperature for sensor ${sensorId}: ${e}")
         return
     }
 
@@ -68,4 +68,20 @@ def refresh() {
         value: nowDay + " at " + nowTime,
         displayed: false
     )
+}
+
+private float getTemperature(sensorId) {
+    def uri = "http://${parent.getHa7netAddress()}"
+    def body = [Address_Array: "${sensorId}"]
+    def path = '/1Wire/ReadHumidity.html'
+
+    response = parent.doHttpPost(uri, path, body)
+
+    if (!response) throw new Exception("doHttpPost to get temperature from temp+humidity sensor returned empty response ${sensorId}")
+
+    element = response.'**'.find{ it.@name == 'Temperature_0' }
+
+    if (!element) throw new Exception("Can't find Temperature_0 element in response from HA7Net for sensor ${sensorId}")
+
+    return(element.@value.toFloat())
 }

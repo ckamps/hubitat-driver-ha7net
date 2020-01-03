@@ -1,4 +1,4 @@
-def version() {'v0.1.2'}
+def version() {'v0.1.4'}
 
 import groovy.xml.*
 
@@ -101,55 +101,9 @@ def deleteUnmatchedChildren() {
    }
 }
 
-// Called by humidity child devices during their refresh() methods
-float getHumidity(sensorId) {
-    def uri = "http://${address}"
-    def body = [Address_Array: "${sensorId}"]
-    def path = '/1Wire/ReadHumidity.html'
-
-    response = doHttpPost(uri, path, body)
-
-    element = response.'**'.find{ it.@name == 'Humidity_0' }
-    
-    if (!element) {
-        throw new Exception("Can't obtain humidity for sensor ${sensorId}")
-    }
-
-    return(element.@value.toFloat())
-}
-
-// Called by temperature child devices that are part of AAG TAI-8540 sensors during their refresh() methods
-float getTemperatureH(sensorId) {
-    def uri = "http://${address}"
-    def body = [Address_Array: "${sensorId}"]
-    def path = '/1Wire/ReadHumidity.html'
-
-    response = doHttpPost(uri, path, body)
-
-    element = response.'**'.find{ it.@name == 'Temperature_0' }
-
-    if (!element) {
-        throw new Exception("Can't obtain temperature for sensor ${sensorId}")
-    }
-
-    return(element.@value.toFloat())
-}
-
-// Called by temperature only child devices during their refresh() methods
-float getTemperature(sensorId) {
-    def uri = "http://${address}"
-    def body = [Address_Array: "${sensorId}"]
-    def path = '/1Wire/ReadTemperature.html'
-
-    response = doHttpPost(uri, path, body)
-
-    element = response.'**'.find{ it.@name == 'Temperature_0' }
-    
-    if (!element) {
-        throw new Exception("Can't obtain temperature for sensor ${sensorId}")
-    }
-
-    return(element.@value.toFloat())
+// To Do: Is there a more direct means for child devices to access parent preferences/settings?
+def getHa7netAddress() {
+    return(address)   
 }
 
 private def getSensors() {
