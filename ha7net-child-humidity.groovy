@@ -1,4 +1,4 @@
-def version() {'v0.1.4'}
+def version() {'v0.1.6'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Humidity',
@@ -78,6 +78,8 @@ private float getHumidity(sensorId) {
     element = response.'**'.find{ it.@name == 'Humidity_0' }
     
     if (!element) throw new Exception("Can't find Humidity_0 element in response from HA7Net for sensor ${sensorId}")
+
+    if (!element.@value) throw new Exception("Empty value in Humidity_0 element in response from HA7Net for sensor ${sensorId}")
 
     return(element.@value.toFloat())
 }

@@ -1,4 +1,4 @@
-def version() {'v0.1.5'}
+def version() {'v0.1.6'}
 
 import groovy.xml.*
 
@@ -103,20 +103,36 @@ def deleteUnmatchedChildren() {
 
 def doHttpPost(uri, path, body) {
     def response = []
-    try {
-        httpPost( [uri: uri, path: path, body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
-            if (resp.success) {
-                response = resp.data
-                if ((logEnable) && (response.data)) {
-                    serializedDocument = XmlUtil.serialize(response)
-                    log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
+    int retries = 0
+    def cmds = []
+    cmds << 'delay 1000'
+
+    // Attempt a max of 3 retries to address cases in which transient read errors can occur when 
+    // interacting with the HA7Net.
+    while(retries++ < 3) {
+        try {
+            httpPost( [uri: uri, path: path, body: body, requestContentType: 'application/x-www-form-urlencoded'] ) { resp ->
+                if (resp.success) {
+                    response = resp.data
+                    if ((logEnable) && (response.data)) {
+                        serializedDocument = XmlUtil.serialize(response)
+                        log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
+                    }
+                } else {
+                    throw new Exception("httpPost() not successful for: ${uri} ${path}") 
                 }
             }
+            return(response)
+        } catch (Exception e) {
+            log.warn "httpPost() of ${path} to HA7Net failed: ${e.message}"
+            // When read time out error occurs, retry the operation. Otherwise, throw
+            // an exception.
+            if (!e.message.contains('Read timed out')) throw new Exception("httpPost() failed for: ${uri} ${path}")
         }
-    } catch (Exception e) {
-        log.warn "httpPost() of ${path} to HA7Net failed: ${e.message}"
+        log.warn('Delaying 1 second before next httpPost() retry')
+        cmds
     }
-    return(response)
+    throw new Exception("httpPost() exceeded max retries for: ${uri} ${path}")
 }
 
 // To Do: Is there a more direct means for child devices to access parent preferences/settings?
