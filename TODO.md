@@ -6,6 +6,8 @@
 
 * When recreating child devices, support an option to retain existing Device Name and Device Label values.
 
+* Use published 1-Wire device family codes to discover supported 1-Wire sensors to request lists of specific sensor types from the HA7Net vs the current approach of getting all sensors from the HA7Net and blindly trying to determine if a sensor is a humidity sensor and then falling back to a temperature sensor.
+
 ## Longer Term Enhancements
 
 * Exercise standalone testing - https://community.hubitat.com/t/unit-testing-groovy-apps-and-drivers/3691/14
