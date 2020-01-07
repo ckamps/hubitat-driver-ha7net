@@ -62,3 +62,7 @@ Within a virtual device associated with the parent driver, you can execute the f
 ## Auto Refreshing Child Device Readings
 
 Since the HA7Net is not actively sending sensor data to Hubitat, you'll typically want to set up a rule in Rule Machine (RM) to periodically trigger a refresh of the sensors by selecting an every n minutes (or whatever) trigger and an action of "refresh" on the parent device. Doing so will result in the `refreshChildren` command being sent to the parent.
+
+## References
+
+[HA7Net User's Manual and Programmer's Guide](https://www.embeddeddatasystems.com/assets/images/supportFiles/manuals/UsersMan-HA7Net.pdf)

@@ -52,7 +52,7 @@ def refresh() {
     sendEvent(
         name: 'humidity',
         value: humidity,
-        unit: "%",
+        unit: "%RH",
         descriptionText: "Humidity is ${humidity}%",
     )
   

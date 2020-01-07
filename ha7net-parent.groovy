@@ -1,4 +1,4 @@
-def version() {'v0.1.6'}
+def version() {'v0.1.7'}
 
 import groovy.xml.*
 
@@ -105,7 +105,7 @@ def doHttpPost(uri, path, body) {
     def response = []
     int retries = 0
     def cmds = []
-    cmds << 'delay 1000'
+    cmds << 'delay 100'
 
     // Attempt a max of 3 retries to address cases in which transient read errors can occur when 
     // interacting with the HA7Net.
