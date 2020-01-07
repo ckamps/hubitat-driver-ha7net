@@ -13,9 +13,11 @@ It should not be difficult to extend these drivers to support similar 1-Wire gat
 
 Similarly, use of [owserver](https://manpages.debian.org/testing/owserver/owserver.1.en.html) should also be failrly straightforward for those people who have deployed `owserver` on their own computers.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) if you'd like to contribute fixes and/or enhancements.
+
 ## Current State
 
-Beta quality. Basic testing of these drivers has been done. See [TODO](TODO.md) for outstanding work.
+Beta quality. Basic testing of these drivers has been done. See the associated [issues in GitHub](https://github.com/ckamps/hubitat-drivers-ha7net/issues) for outstanding enhancements of interest.
 
 ## Supported 1-Wire Sensors
 
