@@ -34,8 +34,6 @@ Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have
 
 ### 1. Deploy Drivers to Hubitat
 
-For now, even if you don't have humidity sensors, deploy all of the following drivers to your Hubitat.
-
 |Driver File|Description|
 |-----------|-----------|
 |`ha7net-parent.groovy`|Install regardless of the 1-Wire sensors you have in use. Auto discovers 1-Wire sensors via HA7Net and creates child devices.|
