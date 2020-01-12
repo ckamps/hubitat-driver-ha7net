@@ -23,16 +23,18 @@ Beta quality. Basic testing of these drivers has been done. See the associated [
 
 Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have been tested with and currently support only these sensors:
 
-|Sensor|Type|
-|------|----|
-|DS18B20|Temperature|
-|DS18S20|Temperature|
-|DS2438|Temperature|
-|AAG TAI-8540|Humidity + temperature|
+|Sensor|Type|Notes|
+|------|----|-----|
+|DS18B20|Temperature||
+|DS18S20|Temperature||
+|DS2438|Temperature||
+|AAG TAI-8540|Humidity + temperature|Uses a DS2438 as the interface to the 1-Wire network.|
 
 ## Usage
 
-### Deploy Drivers to Hubitat
+### 1. Deploy Drivers to Hubitat
+
+For now, even if you don't have humidity sensors, deploy all of the following drivers to your Hubitat.
 
 |Driver File|Description|
 |-----------|-----------|
@@ -41,12 +43,40 @@ Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have
 |`ha7net-child-temperature-h.groovy`|Supports temperature readings from the combined AAG TAI-8540 humidity + temperature sensor.|
 |`ha7net-parent.groovy`|Auto discovers 1-Wire sensors via HA7Net and creates child devices.|
 
-### Create Virtual Device for the HA7Net
+### 2. Create Virtual Device for the HA7Net
 
 1. Select the driver "HA7Net 1-Wire - Parent".
 1. Set the HA7Net IP address.
 1. Press the "Refresh" button on the virtual device to discover the current set of 1-Wire sensors known to the HA7Net and to create child devices for each sensor.
 1. Optionally, in each child device change the Device Name and/or Device Label to represent the function and/or location of the associated sensor.
+
+The following example shows the results of the parent driver having performed a discovery of supported 1-Wire sensors, creation of child devices, and the user's modification of most of the child device names to reflect the function of each child.  Several of the child device names have not yet been customized. 
+
+<img src="images/parent-device-example.png" alt="Example Parent Device" width="800"/>
+
+### 3. Configure Auto Refresh of Child Device Readings
+
+Since the HA7Net is not actively sending sensor data to Hubitat, you'll typically want to set up a rule in Rule Machine (RM) to periodically trigger a refresh of the sensors by selecting an every n minutes (or whatever) trigger and an action of "refresh" on the parent device. Doing so will result in the `refreshChildren` command being sent to the parent.
+
+<img src="images/rule-machine-ha7net-refresh-example.png" alt="Rule Machine HA7Net Refresh Example" width="600"/>
+
+### 4. Adjust HA7Net Lock Idle Timeout
+
+Once you configure a rule to automatically refresh your child devices, you may encounter sporadic warnings in the Hubitat logs stating that `httpPost()` attempts have time out.  If you encounter these warnings, then you can adjust the HA7Net's "lock idle timout" setting from the default of 60 seconds to a much lower number such as 5 seconds.
+
+You can modify this setting via the HA7Net web UI under "Miscellaneous":
+
+<img src="images/ha7net-lock-idle-timeout.png" alt="Ha7Net Lock Idle Timeout Setting" width="600"/>
+
+### 5. Perform Ongoing Maintenance of Your Devices
+
+You can manage child devices without impacting the parent and other child devices by:
+* Changing the name and/or label of a child device.
+* Enabling/disabling logging on a child device.
+* Refreshing a child device to get the latest sensor readings.
+* Deleting a child device if you either remove the associated sensor or want to have the parent recreate the child device. In the latter case, you can execute the `createChildren` command on the parent to recreate child devices for all sensors for which a child device does not already exist.
+
+## References
 
 ### Parent Driver Commands
 
@@ -61,10 +91,6 @@ Within a virtual device associated with the parent driver, you can execute the f
 |`refresh`|See `refreshChildren`.|
 |`refreshChildren`|Updates the sensor reading for each child device by calling the `refresh()` method of each child.|
 
-## Auto Refreshing Child Device Readings
-
-Since the HA7Net is not actively sending sensor data to Hubitat, you'll typically want to set up a rule in Rule Machine (RM) to periodically trigger a refresh of the sensors by selecting an every n minutes (or whatever) trigger and an action of "refresh" on the parent device. Doing so will result in the `refreshChildren` command being sent to the parent.
-
-## References
+### HA7Net User's Manual and Programmer's Guide
 
 [HA7Net User's Manual and Programmer's Guide](https://www.embeddeddatasystems.com/assets/images/supportFiles/manuals/UsersMan-HA7Net.pdf)

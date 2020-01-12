@@ -14,34 +14,29 @@
 import groovy.util.XmlSlurper
 import groovy.xml.*
 
-// Change these settings for your HA7Net and particular 1-Wire sensor:
-def ipAddress = '192.168.2.242'
-def sensorId = 'C1000000A68BCF26'
+def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
-def post = new URL("http://${ipAddress}/1Wire/ReadHumidity.html").openConnection();
+def ipAddress = '192.168.2.242'
+def sensorId = '580008014D22AF10'
+
+def post = new URL("http://${ipAddress}/1Wire/ReadTemperature.html").openConnection()
 
 def message = "Address_Array=${sensorId}"
 post.setRequestMethod("POST")
 post.setDoOutput(true)
 post.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-post.getOutputStream().write(message.getBytes("UTF-8"));
-def postRC = post.getResponseCode();
+post.getOutputStream().write(message.getBytes("UTF-8"))
+def postRC = post.getResponseCode()
 if(postRC.equals(200)) {
     resultText = post.getInputStream().getText()
 }
 
-println(resultText);
-
-def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
+println(resultText)
 
 document = parser.parseText(resultText)
 
-println(XmlUtil.serialize(document));
-element = document.'**'.find{ it.@name == 'Humidity_0' };
-humidity = element.@value.toFloat().round(1)
-println("Humidity: ${humidity}");
-
-element = document.'**'.find{ it.@name == 'Temperature_0' };
+element = document.'**'.find{ it.@name == 'Temperature_0' }
 temp_c = element.@value.toFloat().round(1)
-temp_f = ((9.0/5.0)*temp_c + 32).round(1);
-println("Temp: ${temp_f}");
+println("Temp: ${temp_c} C")
+temp_f = ((9.0/5.0)*temp_c + 32).round(1)
+println("Temp: ${temp_f} F")

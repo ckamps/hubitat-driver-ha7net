@@ -1,4 +1,4 @@
-def version() {'v0.1.6'}
+def version() {'v0.1.7'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Humidity',
@@ -68,7 +68,7 @@ def refresh() {
 
 private float getHumidity(sensorId) {
     def uri = "http://${parent.getHa7netAddress()}"
-    def body = [Address_Array: "${sensorId}"]
+    def body = [Address_Array: sensorId]
     def path = '/1Wire/ReadHumidity.html'
 
     response = parent.doHttpPost(uri, path, body)
