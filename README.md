@@ -38,10 +38,10 @@ For now, even if you don't have humidity sensors, deploy all of the following dr
 
 |Driver File|Description|
 |-----------|-----------|
-|`ha7net-child-temperature.groovy`|Supports DS18B20 1-Wire temperature sensors.|
-|`ha7net-child-humidity.groovy`|Supports humidity readings from the combined AAG TAI-8540 humidity + temperature sensor.|
-|`ha7net-child-temperature-h.groovy`|Supports temperature readings from the combined AAG TAI-8540 humidity + temperature sensor.|
-|`ha7net-parent.groovy`|Auto discovers 1-Wire sensors via HA7Net and creates child devices.|
+|`ha7net-parent.groovy`|Install regardless of the 1-Wire sensors you have in use. Auto discovers 1-Wire sensors via HA7Net and creates child devices.|
+|`ha7net-child-temperature.groovy`|Install when you have DS18S20, DS18B20, and/or DS2438 temperature sensors.|
+|`ha7net-child-humidity.groovy`|Install when you have the AAG TAI-8540 humidity + temperature sensor.|
+|`ha7net-child-temperature-h.groovy`|Install when you have the AAG TAI-8540 humidity + temperature sensor.|
 
 ### 2. Create Virtual Device for the HA7Net
 
