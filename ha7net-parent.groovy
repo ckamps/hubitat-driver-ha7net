@@ -149,7 +149,7 @@ private def getSensorType(sensorId) {
 
     def uri = "http://${address}"
     def path = '/1Wire/ReadHumidity.html'
-    def body = [LockID: lockId, Address_Array: "${sensorId}"]
+    def body = [Address_Array: "${sensorId}"]
 
     response = doHttpPost(uri, path, body)
 
