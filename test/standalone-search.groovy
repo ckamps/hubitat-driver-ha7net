@@ -14,49 +14,72 @@
 import groovy.util.XmlSlurper
 import groovy.xml.*
 
-// Change these settings for your HA7Net and particular 1-Wire sensor:
-def ipAddress = '192.168.2.242'
-def sensorId = 'C1000000A68BCF26'
-
-def post = new URL("http://${ipAddress}/1Wire/Search.html").openConnection();
-
-def message = 'LockID=0';
-post.setRequestMethod("POST")
-post.setDoOutput(true)
-post.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-post.getOutputStream().write(message.getBytes("UTF-8"));
-def postRC = post.getResponseCode();
-if(postRC.equals(200)) {
-    resultText = post.getInputStream().getText()
-}
-
-println(resultText);
-
 def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
-document = parser.parseText(resultText)
+// Change these settings for your HA7Net and particular 1-Wire sensor:
+def ipAddress = '192.168.2.242'
 
-serializedDocument = XmlUtil.serialize(document)
+lockId = getLock(ipAddress)
 
-println serializedDocument.replace("\n", "").replace("\r", "")
-
-sensorElements = document.'**'.findAll{ it.@name.text().startsWith('Address_') };
-
-println sensorElements.size()
-
-sensorElements.each {
-    println it.@value.text();
+// Search for all sensors
+def getList = new URL("http://${ipAddress}/1Wire/Search.html").openConnection()
+def getListMessage = "LockID=${lockId}"
+getList.setRequestMethod("POST")
+getList.setDoOutput(true)
+getList.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+getList.getOutputStream().write(getListMessage.getBytes("UTF-8"))
+getListRC = getList.getResponseCode()
+if(getListRC.equals(200)) {
+    getListResult = getList.getInputStream().getText()
+    println(getListResult)
 }
 
-//document.'**'.findAll{ it.@class == 'HA7Value' && it.@name.text().startsWith('Address_') }.each {
-//    println it.@value.text();
-//}
+document = parser.parseText(getListResult)
+serializedDocument = XmlUtil.serialize(document)
+println serializedDocument.replace("\n", "").replace("\r", "")
+sensorElements = document.'**'.findAll{ it.@name.text().startsWith('Address_') }
+println sensorElements.size()
+sensorElements.each {
+    println it.@value.text()
+}
 
-//element = document.'**'.find{ it.@name == 'Humidity_0' };
-//humidity = element.@value.toFloat().round(1)
-//println("Humidity: ${humidity}");
+releaseLock(ipAddress, lockId)
 
-//element = document.'**'.find{ it.@name == 'Temperature_0' };
-//temp_c = element.@value.toFloat().round(1)
-//temp_f = ((9.0/5.0)*temp_c + 32).round(1);
-//println("Temp: ${temp_f}");
+def getLock(ipAddress) {
+    def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
+
+    def getLock = new URL("http://${ipAddress}/1Wire/GetLock.html").openConnection()
+    def getLockResult = ''
+    def lockId = ''
+    getLock.setRequestMethod("GET")
+    getLockRC = getLock.getResponseCode()
+    println("getLockRC = ${getLockRC}")
+    if(getLockRC.equals(200)) {
+        getLockResult = getLock.getInputStream().getText()
+        println(getLockResult)
+    
+        document = parser.parseText(getLockResult)
+        serializedDocument = XmlUtil.serialize(document)
+        println serializedDocument.replace("\n", "").replace("\r", "")
+        element = document.'**'.find{ it.@name == 'LockID_0' }
+        lockId = element.@value.text()
+        println("Lock: ${lockId}")
+        return(lockId)
+    }
+}
+
+def releaseLock(ipAddress, lockId) {
+    def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
+
+    def relLock = new URL("http://${ipAddress}/1Wire/ReleaseLock.html").openConnection()
+    def relLockMessage = "LockID=${lockId}"
+    relLock.setRequestMethod("POST")
+    relLock.setDoOutput(true)
+    relLock.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+    relLock.getOutputStream().write(relLockMessage.getBytes("UTF-8"))
+    relLockRC = relLock.getResponseCode()
+    if(relLockRC.equals(200)) {
+        relLockResult = relLock.getInputStream().getText()
+        println(relLockResult)
+    }
+}

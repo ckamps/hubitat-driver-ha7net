@@ -1,4 +1,4 @@
-def version() {'v0.1.7'}
+def version() {'v0.1.8'}
 
 import groovy.xml.*
 
@@ -40,6 +40,7 @@ def refresh() {
 }
 
 def createChildren() {
+    if (logEnable) log.debug("Creating children devices")
     def sensors = []
 
     sensors = getSensors()
@@ -48,6 +49,7 @@ def createChildren() {
         // If we don't find a child device equal to the current sensor ID, then we'll
         // determine the sensor type, and add one or more child devices.
         if (getChildDevice(sensorId) == null) {
+            if (logEnable) log.debug("Child device does not yet exist for sensor: ${sensorId}")
             sensorType = getSensorType(sensorId)
             if (sensorType == 'temperature') {
                 if (logEnable) log.debug "Discovered temperature sensor: ${sensorId}"
@@ -65,12 +67,14 @@ def createChildren() {
             } else {
                 if (logEnable) log.warn "Discovered unknown sensor type: ${sensorId}"
             }
+        } else {
+            if (logEnable) log.debug("Child device already exists for sensor: ${sensorId}")
         }
     }
 }
 
 def refreshChildren(){
-    if (logEnable) log.info "Refreshing children"
+    if (logEnable) log.info "Refreshing children devices"
     def children = getChildDevices()
     children.each {child->
         child.refresh()
@@ -78,7 +82,7 @@ def refreshChildren(){
 }
 
 def recreateChildren(){
-    if (logEnable) log.info "Recreating children"
+    if (logEnable) log.info "Recreating children devices"
     // To Do: Based on a new preference, capture the name and label of each child device and reapply those names and labels
     // for all discovered sensors that were previously known.
     deleteChildren()
@@ -86,7 +90,7 @@ def recreateChildren(){
 }
 
 def deleteChildren() {
-    if (logEnable) log.info "Deleting children"
+    if (logEnable) log.info "Deleting children devices"
     def children = getChildDevices()
     children.each {child->
         deleteChildDevice(child.deviceNetworkId)
@@ -94,6 +98,7 @@ def deleteChildren() {
 }
 
 def deleteUnmatchedChildren() {
+    if (logEnable) log.info "Deleting unmatched children devices"
    // To Do: Not yet implemnted.
    discoveredSensors = getSensors()
    getChildDevices().each { device ->
@@ -101,11 +106,76 @@ def deleteUnmatchedChildren() {
    }
 }
 
+private def getSensors() {
+    if (logEnable) log.info "Getting list of sensors known to HA7Net"
+
+    lockId = getLock()
+
+    def uri = "http://${address}"
+    def path = '/1Wire/Search.html'
+    def body = [LockID: lockId]
+
+    response = doHttpPost(uri, path, body)
+
+    relLock(lockId)
+
+    def discoveredSensors = []
+    def sensorElements = []
+
+    // We should be able to modify this findAll statement to construct an array of sensor IDs
+    // as opposed to depending on the each loop.
+    //
+    // Something like the following but I have yet to get the right hand side correct:
+    //
+    // discoveredSensors = response.'**'.findAll{ it.@name.text().startsWith('Address_') }.*.value.text()
+
+    sensorElements = response.'**'.findAll{ it.@name.text().startsWith('Address_') }
+    
+    if (logEnable) log.debug("number of sensor elements found: ${sensorElements.size()}")
+    
+    sensorElements.each {
+        def sensorId = it.@value.text()
+        if (logEnable) log.debug("Sensor discovered - value: ${sensorId}")
+        discoveredSensors.add(sensorId)
+    }
+
+    return(discoveredSensors)
+}
+
+private def getSensorType(sensorId) {
+    if (logEnable) log.info "Determining sensor type for sensor: ${sensorId}"
+    // Attempt to look up humidity value. If successful, assume 1-Wire sensor is a combination humidity and
+    // temperture sensor. If not successful, assume temperature only sensor.
+
+    lockId = getLock()
+
+    def uri = "http://${address}"
+    def path = '/1Wire/ReadHumidity.html'
+    def body = [LockID: lockId, Address_Array: "${sensorId}"]
+
+    response = doHttpPost(uri, path, body)
+
+    relLock(lockId)
+
+    element = response.'**'.find{ it.@class == 'HA7Value' &&
+                                  it.@name.text().startsWith('Device_Exception_0') &&
+                                  it.@value.text().startsWith('Not a')
+                                 }
+     
+    // To Do: When we think we found a temperature only device, we should probably do a standalone temperature
+    // lookup to confirm that it is a temperature device before moving on.
+
+    // To Do: Add deteection of unsupported devices and log those cases.
+
+    return(element ? 'temperature' : 'humidity')
+}
+
 def doHttpPost(uri, path, body) {
+    if (logEnable) log.debug("doHttpPost called: uri: ${uri} path: ${path} body: ${body}")
     def response = []
     int retries = 0
     def cmds = []
-    cmds << 'delay 100'
+    cmds << 'delay 1'
 
     // Attempt a max of 3 retries to address cases in which transient read errors can occur when 
     // interacting with the HA7Net.
@@ -136,58 +206,73 @@ def doHttpPost(uri, path, body) {
 }
 
 // To Do: Is there a more direct means for child devices to access parent preferences/settings?
+
 def getHa7netAddress() {
     return(address)   
 }
 
-private def getSensors() {
-    def uri = "http://${address}"
-    def path = '/1Wire/Search.html'
-    def body = [LockID: '0']
+// HA7Net and Locking: getLock() and relLock()
+//
+// The following methods are currently used when accessing the /1Wire/Search.html interface to
+// avoid conflicts when multiple clients and/or users attempt to access the HA7Net and 1-Wire
+// bus at the same time.
+//
+// Note that these methods are not used when accessing the higher level interfaces of
+// the HA7Net such as /1Wire/ReadHumidity.html and /1Wire/ReadTemperature.html.  It is believed
+// that for these higher level interfaces, the HA7Net performs its own concurrency management
+// as it carries out multiple actions on the 1-Wire bus for each invocation of the higher level
+// interface.  It is believed that when multiple requests for higher level interfaces occur, the
+// HA7Net will queue them until either the currently executing higher level action has completed or
+// a lock obtained by a client is either released or expires.
+//
+// See the HA7Net User's Manual for an overview of concurrency management:
+//
+// https://www.embeddeddatasystems.com/assets/images/supportFiles/manuals/UsersMan-HA7Net.pdf
 
-    response = doHttpPost(uri, path, body)
+private def getLock() {
+    if (logEnable) log.debug("Attempting to obtain 1-Wire network lock")
+    def response = []
+    def uri = "http://${address}/1Wire/GetLock.html"
 
-    def discoveredSensors = []
-    def sensorElements = []
-
-    // We should be able to modify this findAll statement to construct an array of sensor IDs
-    // as opposed to depending on the each loop.
-    //
-    // Something like the following but I have yet to get the right hand side correct:
-    //
-    // discoveredSensors = response.'**'.findAll{ it.@name.text().startsWith('Address_') }.*.value.text()
-
-    sensorElements = response.'**'.findAll{ it.@name.text().startsWith('Address_') }
-    
-    if (logEnable) log.debug("number of sensor elements found: ${sensorElements.size()}")
-    
-    sensorElements.each {
-        def sensorId = it.@value.text()
-        if (logEnable) log.debug("Sensor discovered - value: ${sensorId}")
-        discoveredSensors.add(sensorId)
+    httpGet(uri) { resp ->
+        if (resp.success) {
+            response = resp.data
+            if ((logEnable) && (response.data)) {
+                serializedDocument = XmlUtil.serialize(response)
+                log.debug(serializedDocument.replace('\n', '').replace('\r', ''))
+            }
+        } else {
+            throw new Exception("httpGet() not successful for: ${uri} ${path}") 
+        }
     }
+    element = response.'**'.find{ it.@name == 'LockID_0' }
+    
+    if (!element.@value) throw new Exception("Empty value in LockID_0 element in response from HA7Net")
 
-    return(discoveredSensors)
+    lockId = element.@value.text()
+
+    if (logEnable) log.debug("1-Wire network lock obtained successfully: ${lockId}")
+
+    return(lockId)
 }
 
-private def getSensorType(sensorId) {
-    // Attempt to look up humidity value. If successful, assume 1-Wire sensor is a combination humidity and
-    // temperture sensor. If not successful, assume temperature only sensor.
+private def relLock(lockId) {
+    if (logEnable) log.debug("Attempting to release 1-Wire network lock: ${lockId}")
+    def response = []
     def uri = "http://${address}"
-    def path = '/1Wire/ReadHumidity.html'
-    def body = [Address_Array: "${sensorId}"]
+    def path = '/1Wire/ReleaseLock.html'
+
+    def body = [LockID: lockId]
 
     response = doHttpPost(uri, path, body)
 
-    element = response.'**'.find{ it.@class == 'HA7Value' &&
-                                  it.@name.text().startsWith('Device_Exception_0') &&
-                                  it.@value.text().startsWith('Not a')
-                                 }
-     
-    // To Do: When we think we found a temperature only device, we should probably do a standalone temperature
-    // lookup to confirm that it is a temperature device before moving on.
+    if (!response) throw new Exception("doHttpPost to release lock returned empty response")
 
-    // To Do: Add deteection of unsupported devices and log those cases.
+    element = response.'**'.find{ it.@name == 'Exception_Code_0' }
+    
+    if (!element.@value) throw new Exception("Empty value in Exception_Code_0 element in release lock response from HA7Net")
 
-    return(element ? 'temperature' : 'humidity')
+    if (element.@value != '0') throw new Exception("Non zero value in Exception_Code_0 element in release lock response from HA7Net: ${element.@value}")
+
+    if (logEnable) log.debug("1-Wire network lock released successfully: ${lockId}")
 }
