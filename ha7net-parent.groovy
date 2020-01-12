@@ -147,15 +147,11 @@ private def getSensorType(sensorId) {
     // Attempt to look up humidity value. If successful, assume 1-Wire sensor is a combination humidity and
     // temperture sensor. If not successful, assume temperature only sensor.
 
-    lockId = getLock()
-
     def uri = "http://${address}"
     def path = '/1Wire/ReadHumidity.html'
     def body = [LockID: lockId, Address_Array: "${sensorId}"]
 
     response = doHttpPost(uri, path, body)
-
-    relLock(lockId)
 
     element = response.'**'.find{ it.@class == 'HA7Value' &&
                                   it.@name.text().startsWith('Device_Exception_0') &&
