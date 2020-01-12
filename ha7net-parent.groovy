@@ -1,4 +1,4 @@
-def version() {'v0.1.8'}
+def version() {'v0.1.9'}
 
 import groovy.xml.*
 
@@ -41,36 +41,10 @@ def refresh() {
 
 def createChildren() {
     if (logEnable) log.debug("Creating children devices")
-    def sensors = []
-
-    sensors = getSensors()
-
-    sensors.each { sensorId ->
-        // If we don't find a child device equal to the current sensor ID, then we'll
-        // determine the sensor type, and add one or more child devices.
-        if (getChildDevice(sensorId) == null) {
-            if (logEnable) log.debug("Child device does not yet exist for sensor: ${sensorId}")
-            sensorType = getSensorType(sensorId)
-            if (sensorType == 'temperature') {
-                if (logEnable) log.debug "Discovered temperature sensor: ${sensorId}"
-                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - Temperature", isComponent: false])
-                child.refresh()
-            } else if (sensorType == 'humidity') {
-                if (logEnable) log.debug "Discovered humidity sensor: ${sensorId}"
-                
-                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Humidity", sensorId, [name: sensorId, label: "${sensorId} - Humidity" , isComponent: false])
-                child.refresh()
-                // Since AAG TAI-8540 sensors can have the same 1-Wire ID for both humidity and temp, by convention, we appended
-                // a trailing ".1" to the 1-Wire ID when we registered the temperature device.
-                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature (H)", "${sensorId}.1", [name:  "${sensorId}.1", label:  "${sensorId}.1 - Temperature", isComponent: false])
-                child.refresh()
-            } else {
-                if (logEnable) log.warn "Discovered unknown sensor type: ${sensorId}"
-            }
-        } else {
-            if (logEnable) log.debug("Child device already exists for sensor: ${sensorId}")
-        }
-    }
+    
+    getSensorsDs18S20()
+    getSensorsDs18B20()
+    getSensorsDs2438()
 }
 
 def refreshChildren(){
@@ -99,21 +73,122 @@ def deleteChildren() {
 
 def deleteUnmatchedChildren() {
     if (logEnable) log.info "Deleting unmatched children devices"
-   // To Do: Not yet implemnted.
-   discoveredSensors = getSensors()
-   getChildDevices().each { device ->
-       if (logEnable) log.debug("Found an existing child device")
-   }
+    // To Do: Not yet implemnted.
+    discoveredSensors = getSensors()
+    getChildDevices().each { device ->
+        if (logEnable) log.debug("Found an existing child device")
+    }
 }
 
-private def getSensors() {
-    if (logEnable) log.info "Getting list of sensors known to HA7Net"
+private def getSensorsDs18S20() {
+    if (logEnable) log.info "Getting DS18S20 family sensors"
+
+    def sensors = []
+    
+    sensors = getSensors('10')
+
+    sensors.each { sensorId ->
+        if (getChildDevice(sensorId) == null) {
+            if (logEnable) log.debug("Child device does not yet exist for DS18S20 sensor: ${sensorId}")
+            child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - DS18S20 Temperature", isComponent: false])
+            child.refresh()
+        } else {
+            if (logEnable) log.debug("Child device already exists for DS18S20 sensor: ${sensorId}")
+        }
+    }
+
+}
+
+private def getSensorsDs18B20() {
+    if (logEnable) log.info "Getting DS18B20 family sensors"
+
+    def sensors = []
+    
+    sensors = getSensors('28')
+
+    sensors.each { sensorId ->
+        if (getChildDevice(sensorId) == null) {
+            if (logEnable) log.debug("Child device does not yet exist for DS18B20 sensor: ${sensorId}")
+            child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - DS18B20 Temperature", isComponent: false])
+            child.refresh()
+        } else {
+            if (logEnable) log.debug("Child device already exists for DS18B20 sensor: ${sensorId}")
+        }
+    }
+
+}
+
+private def getSensorsDs2438() {
+    if (logEnable) log.info "Getting DS2438 family sensors"
+
+    def sensors = []
+
+    sensors = getSensors('26')
+
+    sensors.each { sensorId ->
+        if (getChildDevice(sensorId) == null) {
+            if (logEnable) log.debug("Child device does not yet exist for DS2438 sensor: ${sensorId}")
+            if (isDs2438TempOnly(sensorId)) {
+                if (logEnable) log.debug "Discovered temperature only DS2438 sensor: ${sensorId}"
+                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - DS2438 Temperature", isComponent: false])
+                child.refresh()
+            } else {
+                if (logEnable) log.debug "Discovered humidity + temperature DS2438 sensor: ${sensorId}"
+                
+                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Humidity", sensorId, [name: sensorId, label: "${sensorId} - Humidity" , isComponent: false])
+                child.refresh()
+                // Since AAG TAI-8540 sensors can have the same 1-Wire ID for both humidity and temp, by convention, we appended
+                // a trailing ".1" to the 1-Wire ID when we registered the temperature device.
+                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature (H)", "${sensorId}.1", [name:  "${sensorId}.1", label:  "${sensorId}.1 - Temperature", isComponent: false])
+                child.refresh()
+            }
+        } else {
+            if (logEnable) log.debug("Child device already exists for DS2438 sensor: ${sensorId}")
+        }
+    }
+
+}
+
+private def isDs2438TempOnly(sensorId) {
+    // The following logic is still a kludge in that the current basis for identifying standalone
+    // DS2438 sensors is not foolproof. We'll likely need to send lower level commands to the sensor
+    // and inspect how it's configured.
+
+    if (logEnable) log.info "Determining if DS2438 sensor is temperature only: ${sensorId}"
+
+    def uri = "http://${address}"
+    def path = '/1Wire/ReadHumidity.html'
+    def body = [Address_Array: "${sensorId}"]
+
+    response = doHttpPost(uri, path, body)
+
+    if (!response) throw new Exception("doHttpPost to get humidity from sensor returned empty response ${sensorId}")
+
+    element = response.'**'.find{ it.@name == 'Humidity_0' }
+    
+    if (!element) throw new Exception("Can't find Humidity_0 element in response from HA7Net for sensor ${sensorId}")
+
+    if (!element.@value) throw new Exception("Empty value in Humidity_0 element in response from HA7Net for sensor ${sensorId}")
+    
+    humidity = element.@value.toFloat()
+    if (logEnable) log.info "Humidity from DS2438 sensor is: ${humidity}"
+
+    // We've seen the HA7Net return RH readings far in excess of 100% RH for standalone DS2438 sensors.
+    if (humidity > 150) {
+        return true
+    } else {
+        return false
+    }
+}
+
+private def getSensors(familyCode) {
+    if (logEnable) log.info "Getting list of sensors known to HA7Net for family code: ${familyCode}"
 
     lockId = getLock()
 
     def uri = "http://${address}"
     def path = '/1Wire/Search.html'
-    def body = [LockID: lockId]
+    def body = [LockID: lockId, FamilyCode: familyCode]
 
     response = doHttpPost(uri, path, body)
 
@@ -140,30 +215,6 @@ private def getSensors() {
     }
 
     return(discoveredSensors)
-}
-
-private def getSensorType(sensorId) {
-    if (logEnable) log.info "Determining sensor type for sensor: ${sensorId}"
-    // Attempt to look up humidity value. If successful, assume 1-Wire sensor is a combination humidity and
-    // temperture sensor. If not successful, assume temperature only sensor.
-
-    def uri = "http://${address}"
-    def path = '/1Wire/ReadHumidity.html'
-    def body = [LockID: lockId, Address_Array: "${sensorId}"]
-
-    response = doHttpPost(uri, path, body)
-
-    element = response.'**'.find{ it.@class == 'HA7Value' &&
-                                  it.@name.text().startsWith('Device_Exception_0') &&
-                                  it.@value.text().startsWith('Not a')
-                                 }
-     
-    // To Do: When we think we found a temperature only device, we should probably do a standalone temperature
-    // lookup to confirm that it is a temperature device before moving on.
-
-    // To Do: Add deteection of unsupported devices and log those cases.
-
-    return(element ? 'temperature' : 'humidity')
 }
 
 def doHttpPost(uri, path, body) {

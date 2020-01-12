@@ -28,7 +28,7 @@ Although the HA7Net supports a broader set of 1-Wire sensors, these drivers have
 |DS18B20|Temperature||
 |DS18S20|Temperature||
 |DS2438|Temperature||
-|AAG TAI-8540|Humidity + temperature|Uses a DS2438 as the interface to the 1-Wire network.|
+|AAG TAI-8540|Humidity + temperature|Uses a DS2438 sensor to provide temperature and act as the interface to the 1-Wire network and a HIH-3610-A sensor to provide temperature.|
 
 ## Usage
 

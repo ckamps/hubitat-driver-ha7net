@@ -18,12 +18,15 @@ def parser = new XmlSlurper(new org.ccil.cowan.tagsoup.Parser())
 
 // Change these settings for your HA7Net and particular 1-Wire sensor:
 def ipAddress = '192.168.2.242'
-
+// 10 - DS18S20
+// 26 - DS2438
+// 28 - DS18B20
+def familyCode = '10'
 lockId = getLock(ipAddress)
 
 // Search for all sensors
 def getList = new URL("http://${ipAddress}/1Wire/Search.html").openConnection()
-def getListMessage = "LockID=${lockId}"
+def getListMessage = "FamilyCode=${familyCode}&LockID=${lockId}"
 getList.setRequestMethod("POST")
 getList.setDoOutput(true)
 getList.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
