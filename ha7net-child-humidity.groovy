@@ -1,4 +1,4 @@
-def version() {'v0.1.7'}
+def version() {'v0.1.8'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Humidity',
@@ -46,7 +46,7 @@ def refresh() {
     }
 
     if (logEnable) log.debug("Humidity: ${humidity}")
-    humidity = humidityOffset ? (humidity + humidityOffset) : humidity
+    humidity = offset ? (humidity + offset) : humidity
     humidity = humidity.round(1)
 
     sendEvent(
