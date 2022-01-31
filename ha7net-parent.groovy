@@ -1,4 +1,4 @@
-def version() {'v0.1.9'}
+def version() {'v0.2.0'}
 
 import groovy.xml.*
 
@@ -129,24 +129,18 @@ private def getSensorsDs2438() {
         if (getChildDevice(sensorId) == null) {
             if (logEnable) log.debug("Child device does not yet exist for DS2438 sensor: ${sensorId}")
             if (isDs2438TempOnly(sensorId)) {
-                if (logEnable) log.debug "Discovered temperature only DS2438 sensor: ${sensorId}"
+                if (logEnable) log.debug "Discovered DS2438 temperature sensor: ${sensorId}"
                 child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature", sensorId, [name: sensorId, label: "${sensorId} - DS2438 Temperature", isComponent: false])
                 child.refresh()
             } else {
-                if (logEnable) log.debug "Discovered humidity + temperature DS2438 sensor: ${sensorId}"
-                
-                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Humidity", sensorId, [name: sensorId, label: "${sensorId} - Humidity" , isComponent: false])
+                if (logEnable) log.debug "Discovered DS2438 temperature + humidity sensor: ${sensorId}"
+                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Humidity", sensorId, [name: sensorId, label: "${sensorId} - DS2438 Humidity + Temperature" , isComponent: false])
                 child.refresh()
-                // Since AAG TAI-8540 sensors can have the same 1-Wire ID for both humidity and temp, by convention, we appended
-                // a trailing ".1" to the 1-Wire ID when we registered the temperature device.
-                child = addChildDevice("ckamps", "HA7Net 1-Wire - Child - Temperature (H)", "${sensorId}.1", [name:  "${sensorId}.1", label:  "${sensorId}.1 - Temperature", isComponent: false])
-                child.refresh()
-            }
+		    }
         } else {
             if (logEnable) log.debug("Child device already exists for DS2438 sensor: ${sensorId}")
         }
     }
-
 }
 
 private def isDs2438TempOnly(sensorId) {

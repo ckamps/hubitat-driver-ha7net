@@ -1,4 +1,4 @@
-def version() {'v0.1.7'}
+def version() {'v0.2.0'}
 
 metadata {
     definition (name: 'HA7Net 1-Wire - Child - Temperature',
